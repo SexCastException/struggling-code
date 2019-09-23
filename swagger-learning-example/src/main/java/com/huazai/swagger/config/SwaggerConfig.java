@@ -2,7 +2,8 @@ package com.huazai.swagger.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -16,12 +17,24 @@ import java.util.ArrayList;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
+    /**
+     * @param environment 项目环境
+     * @return
+     */
     @Bean
-    public Docket docket() {
+    public Docket docket(Environment environment) {
+
+        // 根据不同的环境配置判断是否开启swagger
+        Profiles profiles = Profiles.of("dev", "test");
+        boolean flag = environment.acceptsProfiles(profiles);
+
         return new Docket(DocumentationType.SWAGGER_2)
                 // 配置api接口信息
                 .apiInfo(apiInfo())
-
+                // 分组，用于协同开发
+                .groupName("华仔")
+                // 是否启用swagger，默认为true
+                .enable(flag)
                 .select()
                 // 1.1、RequestHandlerSelectors.basePackage("")指定扫描哪个包下面的接口，默认是any()
                 // 1.2、RequestHandlerSelectors.any()扫描全部
@@ -38,8 +51,19 @@ public class SwaggerConfig {
                 ;
     }
 
+    @Bean
+    public Docket docketA() {
+        return new Docket(DocumentationType.SWAGGER_2).groupName("A");
+    }
+
+    @Bean
+    public Docket docketB() {
+        return new Docket(DocumentationType.SWAGGER_2).groupName("B");
+    }
+
     /**
      * 不配置此Bean则默认使用ApiInfo.DEFAULT信息
+     *
      * @return
      */
     @Bean
